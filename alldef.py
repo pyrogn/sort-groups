@@ -2,6 +2,10 @@ import random
 
 # в других файлах писать from alldef import *, это импортнет функции.
 # написать функцию, которая просто считает вклад человека в группу.
+from gen_relationships import dataAllName
+last_people = dataAllName.name.tolist()
+list_groups = [[], [], [], [], [], []]
+full_dict_relations = {}
 
 
 def best_person(group, list_last_people=last_people, remove=True):
@@ -21,7 +25,7 @@ def best_person(group, list_last_people=last_people, remove=True):
     sorted_dict = {k: v for k, v in sorted(
         mid_dict.items(), key=lambda item: item[1], reverse=True)}
     a = list(sorted_dict.keys())[0]
-    if remove == True:
+    if remove:
         list_last_people.remove(a)
     return a
 
