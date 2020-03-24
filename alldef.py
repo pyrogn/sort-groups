@@ -1,16 +1,18 @@
 import random
 
 # в других файлах писать from alldef import *, это импортнет функции.
-# написать функцию, которая просто считает вклад человека в группу.
 from gen_relationships import dataAllName
 last_people = dataAllName.name.tolist()
 list_groups = [[], [], [], [], [], []]
 full_dict_relations = {}
 
 
-def best_person(group, list_last_people=last_people, remove=True):
+# она берёт номер группы, список оставшихся людей, можно выбрать удалять ли выбранного человека из того списка или нет. Возвращает лишь имя лучшего учащегося.
+
+
+def best_person(group, last_people, remove=True):
     mid_dict = {}
-    for i in list_last_people:
+    for i in last_people:
         sum_1_to_others = 0
         for j in list_groups[group - 1]:
             try:
@@ -26,10 +28,11 @@ def best_person(group, list_last_people=last_people, remove=True):
         mid_dict.items(), key=lambda item: item[1], reverse=True)}
     a = list(sorted_dict.keys())[0]
     if remove:
-        list_last_people.remove(a)
+        last_people.remove(a)
     return a
 
 
+# на вход получает номер группы, выдаёт обратно число - сумма отношений
 def sum_relation(group):
     all_sum = 0
     for i in list_groups[group - 1]:
@@ -45,18 +48,16 @@ def sum_relation(group):
     return all_sum
 
 
-# эту функцию стоит доисправить
-def best_random_group(group, last_people_def=last_people, pop=10):
-    dict_attempts = {}
-    dict_of_students = {}
-    for i in range(10):
-        list_groups = [[], [], [], [], [], []]
-        last_people = last_people_def
-        list_groups[group - 1].append(last_people.pop(random.randrange(len(last_people))))
-        for j in range(pop - 1):
-            list_groups[group - 1].append(best_person(group, remove=True))
-        dict_attempts[i] = sum_relation(group)
-        dict_of_students[i] = list_groups[group - 1]
-    max_key = max(dict_attempts, key=dict_attempts.get)
-
-    return dict_of_students[max_key], dict_attempts[max_key]
+# получаем имя человека, номер группы и просто считает его вносимый вклад в эту группу. Возвращает имя человека и вносимый вклад одновременно, чтобы было удобно занести в словарь.
+def contribution_one_person(person, num_group):
+    sum_contr = 0
+    for i in list_groups[num_group - 1]:
+        try:
+            sum_contr += full_dict_relations[person][i]
+        except:
+            pass
+        try:
+            sum_contr += full_dict_relations[i][person]
+        except:
+            pass
+    return person, sum_contr
