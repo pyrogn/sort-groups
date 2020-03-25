@@ -101,3 +101,95 @@ def all_coef_count(group_dict):
                 if other_student_id in group_dict[group_number]:
                     summcoef += student_dict1[student_id][other_student_id]
     return summcoef
+'''
+Принимает словарь (ключ - id студента, значение - словарь(ключ - id другого студента, значение - коэффициент отношения)) и количество групп
+Возвращает словарь в том же формате, объединяя людей, у которых сумма коэффициентов равна 20. Ключ в таком случа будет кортеж с id студентов.
+Количество групп нужно, чтобы посчитать длину группы с помощью функции count_group_vol.
+Это значение нужно, чтобы предотвращать объединение людей в количестве большем, чем должно быть людей в группе.
+Все коэффициенты отношения у объединённых людей суммируются. Названия в словорях отношений других людей заменяются на соответствующие кортежи
+Функция учитывает возможность объединения людей в группы по 2 и более людей (вплоть до максимальной длины группы)
+Если объединяются больше 2 людей, то сумма коэффициентов каждой пары должна быть равна 20
+Если есть несколько людей, имеющих сумму коэффициентов 20 с одним человеком, но между ними эта сумма меньше,
+то берётся человек, имеющий наибольшую сумму коэффициентов в группе людей, имеющих сумму коэффицентов 20 с данным человеком.
+Данный выбор делается, чтобы избежать ситуации добавления человека с плохими отношениями с остальными,
+другими словами, чтобы сортировка с большей вероятностью объединила оставшихся желающих быть в группе с данным человеком.
+Полученные объединения рассматриваются как один человек. Чтобы учитывалось количество людей в объединениях, придется немного изменить сортировку.
+К сожалению, если наоборот, два разных данных человека хотят объединиться с одним и их сумма коэффициентов меньше 20,
+то объединится первый попавшийся. Я все еще пытаюсь решить эту проблему.
+'''
+def student_unite(student_dict, group_number):
+    student_unite_dict = {} # Cловарь
+    student_unite_list = []
+    for student_id in student_dict:
+        might_be_pair = []
+        if student_id in student_unite_list:
+            continue
+        for other_student_id in student_dict[student_id]:
+            if student_id in student_dict[other_student_id]:
+                if student_dict[student_id][other_student_id] + student_dict[other_student_id][student_id] == 20:
+                    if other_student_id in student_unite_list:
+                        continue
+                    if student_id in student_unite_list:
+                        sumcoef = 0
+                        for student_in_pair in student_unite_dict[student_id]:
+                            if student_in_pair in student_dict[other_student_id] and other_student_id in student_dict[student_in_pair]:
+                                sumcoef += student_dict[student_in_pair][other_student_id] + student_dict[other_student_id][student_in_pair]
+                        if sumcoef / len(student_unite_dict[student_id]) == 20 and len(student_unite_dict[student_id]) in range (2, count_group_vol(student_dict, group_number)):
+                            student_unite_dict[student_id].append(other_student_id)
+                            student_unite_list.append(other_student_id)
+                    else:
+                        student_unite_dict[student_id] = [student_id]
+                        student_unite_list.append(student_id)
+                        might_be_pair.append(other_student_id)
+        if might_be_pair and len(student_unite_dict[student_id]) in range (1, count_group_vol(student_dict, group_number)):
+            for might_add_id in might_be_pair:
+                maxcoef = -20 * (len(might_be_pair + student_unite_dict[student_id]) - 1) - 1
+                for other_student_id in might_be_pair + student_unite_dict[student_id]:
+                    sumcoef = 0
+                    if other_student_id != might_add_id:
+                        if might_add_id in student_dict[other_student_id]:
+                            sumcoef += student_dict[other_student_id][might_add_id]
+                        if other_student_id in student_dict[might_add_id]:
+                            sumcoef += student_dict[might_add_id][other_student_id]
+                    if sumcoef > maxcoef and might_add_id not in student_unite_list:
+                        maxcoef = sumcoef
+                        add_id = might_add_id
+            student_unite_dict[student_id].append(add_id)
+            student_unite_list.append(add_id)
+    for student_pair in student_unite_dict:
+        coef_in_pair = student_dict[student_unite_dict[student_pair][0]]
+        for student_in_pair in student_unite_dict[student_pair]:
+            if student_in_pair != student_unite_dict[student_pair][0]:
+                for third_student_id in student_dict[student_in_pair]:
+                    if third_student_id != student_unite_dict[student_pair][0]:
+                        if third_student_id not in coef_in_pair:
+                            coef_in_pair[third_student_id] = 0
+                        else:
+                            coef_in_pair[third_student_id] += student_dict[student_in_pair][third_student_id]
+                        if coef_in_pair[third_student_id] == 0:
+                            del coef_in_pair[third_student_id]
+                del student_dict[student_unite_dict[student_pair][0]][student_in_pair]
+                del student_dict[student_in_pair]
+        student_dict[student_unite_dict[student_pair][0]] = coef_in_pair
+        student_dict[tuple(student_unite_dict[student_pair])] = student_dict.pop(student_unite_dict[student_pair][0])
+        for third_student_id in student_dict:
+            if third_student_id != student_unite_dict[student_pair][0]:
+                if student_unite_dict[student_pair][0] in student_dict[third_student_id]:
+                    coef_for_student = student_dict[third_student_id][student_unite_dict[student_pair][0]]
+                else:
+                    coef_for_student = 0
+                for student_in_pair in student_unite_dict[student_pair]:
+                    if student_in_pair != student_unite_dict[student_pair][0] and student_in_pair in student_dict[third_student_id]:
+                        coef_for_student += student_dict[third_student_id][student_in_pair]
+                        del student_dict[third_student_id][student_in_pair]
+                if coef_for_student != 0:
+                    student_dict[third_student_id][student_unite_dict[student_pair][0]] = coef_for_student
+                    student_dict[third_student_id][tuple(student_unite_dict[student_pair])] = student_dict[third_student_id].pop(student_unite_dict[student_pair][0])
+    return student_dict
+
+# Принимает словарь студентов(ключ - id, значение словарь(ключ - id, значение - коэффициент)) и количество групп
+# Возвращает длину максимальную длину групп. Если не делится нацело, возвращает целую часть от деления + 1
+def count_group_vol(student_dict, group_number):
+    if len(student_dict) / group_number == int(len(student_dict) / group_number):
+        return len(student_dict) / group_number
+    return len(student_dict) // group_number + 1
