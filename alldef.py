@@ -92,6 +92,49 @@ def student_change(group_dict, is_change = True):
                     is_change = True
     return group_dict
 
+# Такая же функция, что и предыдущая, но принимающая значение depth, обозначающее количество людей на замену
+# Нужен модуль itertools
+def student_change1(group_dict, depth, is_change = True):
+    while is_change == True or depth != 0:
+        sorted_list = []
+        is_change = False
+        for group_num in group_dict:
+            for student_tuple in list(itertools.combinations(group_dict[group_num], depth)):
+                if set(sorted_list) & set(student_tuple):
+                    continue
+                max_coef_change = 0
+                for other_group_num in group_dict:
+                    if other_group_num != group_num:
+                        for other_student_tuple in list(itertools.combinations(group_dict[other_group_num], depth)):
+                            if set(sorted_list) & set(other_student_tuple):
+                                continue
+                            whatif_dict = copy.deepcopy(group_dict)
+                            for student_id in student_tuple:
+                                whatif_dict[group_num].remove(student_id)
+                                whatif_dict[other_group_num].add(student_id)
+                            for other_student_id in other_student_tuple:
+                                whatif_dict[other_group_num].remove(other_student_id)
+                                whatif_dict[group_num].add(other_student_id)
+                            sumcoef_before = all_coef_count(group_dict)
+                            sumcoef_after = all_coef_count(whatif_dict)
+                            if sumcoef_after - sumcoef_before > max_coef_change:
+                                max_coef_change = sumcoef_after - sumcoef_before
+                                student_change_tuple = other_student_tuple
+                                group_change = other_group_num
+                if max_coef_change > 0:
+                    for student_id in student_tuple:
+                        group_dict[group_num].remove(student_id)
+                        group_dict[group_change].add(student_id)
+                        sorted_list.append(student_id)
+                    for student_change_id in student_change_tuple:
+                        group_dict[group_change].remove(student_change_id)
+                        group_dict[group_num].add(student_change_id)
+                        sorted_list.append(student_change_id)
+                    is_change = True
+        if is_change == False:
+            depth -= 1
+    return group_dict
+
 # принимает словарь (ключ - номер группы, значение - множество id cтудентов); возвращает числовое значение(int), обозначающее сумму коэффициентов отношений во всех группах
 def all_coef_count(group_dict):
     summcoef = 0
