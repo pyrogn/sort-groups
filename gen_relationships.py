@@ -1,6 +1,6 @@
 # возвращает full_dict_relations как словарь словарей
 
-
+# PEP8 ругается на то, что я оставляю голый except, признаю свою ошибку, больше не буду повторять. А ещё иногда длинные строки. Самоиронично.
 import pandas as pd
 import numpy as np
 import random
@@ -157,5 +157,9 @@ list_names = dataAllName.name.tolist()
 for i in list_names:
     full_dict_relations[i] = get_dict_relation(i, dataAllQuiz=dataAllName)
 
-# with open('full_dict_relations.txt', 'w') as f:
+# можно разкомментить и выгрузить в файл сгенерированные отношения.
+# хаха, могу 24/7 создавать всё новые отношения, которых только не существует.
+# with open('full_dict_relations2.txt', 'w') as f:
 #     f.write(str(full_dict_relations))
+
+# dataAllName.to_excel('table2.xlsx', index=False)
